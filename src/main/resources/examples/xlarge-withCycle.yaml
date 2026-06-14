@@ -1,0 +1,389 @@
+version: "3"
+services:
+  database-1:
+    depends_on: []
+  database-2:
+    depends_on: []
+  database-3:
+    depends_on: []
+  database-4:
+    depends_on: []
+  database-5:
+    depends_on: []
+  database-6:
+    depends_on: []
+  database-7:
+    depends_on: []
+  database-8:
+    depends_on: []
+  database-9:
+    depends_on: []
+  database-10:
+    depends_on: []
+  database-11:
+    depends_on: []
+  database-12:
+    depends_on: []
+  database-13:
+    depends_on: []
+  database-14:
+    depends_on: []
+  database-15:
+    depends_on: []
+  cache-1:
+    depends_on: []
+  cache-2:
+    depends_on: []
+  cache-3:
+    depends_on: []
+  cache-4:
+    depends_on: []
+  cache-5:
+    depends_on: []
+  cache-6:
+    depends_on: []
+  cache-7:
+    depends_on: []
+  cache-8:
+    depends_on: []
+  cache-9:
+    depends_on: []
+  cache-10:
+    depends_on: []
+  broker-1:
+    depends_on: []
+  broker-2:
+    depends_on: []
+  broker-3:
+    depends_on: []
+  broker-4:
+    depends_on: []
+  broker-5:
+    depends_on: []
+  auth-service-1:
+    depends_on:
+      - database-2
+      - cache-2
+  auth-service-2:
+    depends_on:
+      - database-3
+      - cache-3
+  auth-service-3:
+    depends_on:
+      - database-4
+      - cache-4
+  auth-service-4:
+    depends_on:
+      - database-5
+      - cache-5
+  auth-service-5:
+    depends_on:
+      - database-6
+      - cache-6
+  auth-service-6:
+    depends_on:
+      - database-7
+      - cache-7
+  auth-service-7:
+    depends_on:
+      - database-8
+      - cache-8
+  auth-service-8:
+    depends_on:
+      - database-9
+      - cache-9
+  auth-service-9:
+    depends_on:
+      - database-10
+      - cache-10
+  auth-service-10:
+    depends_on:
+      - database-11
+      - cache-1
+  core-service-1:
+    depends_on:
+      - auth-service-2
+      - database-2
+  core-service-2:
+    depends_on:
+      - auth-service-3
+      - database-3
+  core-service-3:
+    depends_on:
+      - auth-service-4
+      - database-4
+  core-service-4:
+    depends_on:
+      - auth-service-5
+      - database-5
+  core-service-5:
+    depends_on:
+      - auth-service-6
+      - database-6
+  core-service-6:
+    depends_on:
+      - auth-service-7
+      - database-7
+  core-service-7:
+    depends_on:
+      - auth-service-8
+      - database-8
+  core-service-8:
+    depends_on:
+      - auth-service-9
+      - database-9
+  core-service-9:
+    depends_on:
+      - auth-service-10
+      - database-10
+  core-service-10:
+    depends_on:
+      - auth-service-1
+      - database-11
+  core-service-11:
+    depends_on:
+      - auth-service-2
+      - database-12
+  core-service-12:
+    depends_on:
+      - auth-service-3
+      - database-13
+  core-service-13:
+    depends_on:
+      - auth-service-4
+      - database-14
+  core-service-14:
+    depends_on:
+      - auth-service-5
+      - database-15
+  core-service-15:
+    depends_on:
+      - auth-service-6
+      - database-1
+  core-service-16:
+    depends_on:
+      - auth-service-7
+      - database-2
+  core-service-17:
+    depends_on:
+      - auth-service-8
+      - database-3
+  core-service-18:
+    depends_on:
+      - auth-service-9
+      - database-4
+  core-service-19:
+    depends_on:
+      - auth-service-10
+      - database-5
+  core-service-20:
+    depends_on:
+      - auth-service-1
+      - database-6
+  business-service-1:
+    depends_on:
+      - core-service-2
+      - broker-2
+  business-service-2:
+    depends_on:
+      - core-service-3
+      - broker-3
+  business-service-3:
+    depends_on:
+      - core-service-4
+      - broker-4
+  business-service-4:
+    depends_on:
+      - core-service-5
+      - broker-5
+  business-service-5:
+    depends_on:
+      - core-service-6
+      - broker-1
+  business-service-6:
+    depends_on:
+      - core-service-7
+      - broker-2
+  business-service-7:
+    depends_on:
+      - core-service-8
+      - broker-3
+  business-service-8:
+    depends_on:
+      - core-service-9
+      - broker-4
+  business-service-9:
+    depends_on:
+      - core-service-10
+      - broker-5
+  business-service-10:
+    depends_on:
+      - core-service-11
+      - broker-1
+  business-service-11:
+    depends_on:
+      - core-service-12
+      - broker-2
+  business-service-12:
+    depends_on:
+      - core-service-13
+      - broker-3
+  business-service-13:
+    depends_on:
+      - core-service-14
+      - broker-4
+  business-service-14:
+    depends_on:
+      - core-service-15
+      - broker-5
+  business-service-15:
+    depends_on:
+      - core-service-16
+      - broker-1
+  business-service-16:
+    depends_on:
+      - core-service-17
+      - broker-2
+  business-service-17:
+    depends_on:
+      - core-service-18
+      - broker-3
+  business-service-18:
+    depends_on:
+      - core-service-19
+      - broker-4
+  business-service-19:
+    depends_on:
+      - core-service-20
+      - broker-5
+  business-service-20:
+    depends_on:
+      - core-service-1
+      - broker-1
+  business-service-21:
+    depends_on:
+      - core-service-2
+      - broker-2
+  business-service-22:
+    depends_on:
+      - core-service-3
+      - broker-3
+  business-service-23:
+    depends_on:
+      - core-service-4
+      - broker-4
+  business-service-24:
+    depends_on:
+      - core-service-5
+      - broker-5
+  business-service-25:
+    depends_on:
+      - core-service-6
+      - broker-1
+  api-gateway-1:
+    depends_on:
+      - auth-service-1
+      - auth-service-2
+      - auth-service-3
+      - auth-service-4
+      - auth-service-5
+      - auth-service-6
+      - auth-service-7
+      - auth-service-8
+      - auth-service-9
+      - auth-service-10
+      - core-service-1
+  api-gateway-2:
+    depends_on:
+      - auth-service-1
+      - auth-service-2
+      - auth-service-3
+      - auth-service-4
+      - auth-service-5
+      - auth-service-6
+      - auth-service-7
+      - auth-service-8
+      - auth-service-9
+      - auth-service-10
+      - core-service-1
+  api-gateway-3:
+    depends_on:
+      - auth-service-1
+      - auth-service-2
+      - auth-service-3
+      - auth-service-4
+      - auth-service-5
+      - auth-service-6
+      - auth-service-7
+      - auth-service-8
+      - auth-service-9
+      - auth-service-10
+      - core-service-1
+  api-gateway-4:
+    depends_on:
+      - auth-service-1
+      - auth-service-2
+      - auth-service-3
+      - auth-service-4
+      - auth-service-5
+      - auth-service-6
+      - auth-service-7
+      - auth-service-8
+      - auth-service-9
+      - auth-service-10
+      - core-service-1
+  api-gateway-5:
+    depends_on:
+      - auth-service-1
+      - auth-service-2
+      - auth-service-3
+      - auth-service-4
+      - auth-service-5
+      - auth-service-6
+      - auth-service-7
+      - auth-service-8
+      - auth-service-9
+      - auth-service-10
+      - core-service-1
+  frontend-1:
+    depends_on:
+      - api-gateway-2
+  frontend-2:
+    depends_on:
+      - api-gateway-3
+  frontend-3:
+    depends_on:
+      - api-gateway-4
+  frontend-4:
+    depends_on:
+      - api-gateway-5
+  frontend-5:
+    depends_on:
+      - api-gateway-1
+  frontend-6:
+    depends_on:
+      - api-gateway-2
+  frontend-7:
+    depends_on:
+      - api-gateway-3
+  frontend-8:
+    depends_on:
+      - api-gateway-4
+  frontend-9:
+    depends_on:
+      - api-gateway-5
+  frontend-10:
+    depends_on:
+      - api-gateway-1
+
+
+# Zyklus hinzufügen
+  cycle-service-a:
+    depends_on:
+      - cycle-service-b
+  cycle-service-b:
+    depends_on:
+      - cycle-service-c
+  cycle-service-c:
+    depends_on:
+      - cycle-service-a

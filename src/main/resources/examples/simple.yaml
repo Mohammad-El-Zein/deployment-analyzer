@@ -1,0 +1,16 @@
+version: "3"
+services:
+  frontend:
+    depends_on:
+      - api-gateway
+  api-gateway:
+    depends_on:
+      - auth-service
+  auth-service:
+    depends_on:
+      - database
+      - redis
+  database:
+    depends_on: []
+  redis:
+    depends_on: []

@@ -1,0 +1,96 @@
+version: "3"
+services:
+
+  # Datenbank Layer
+  postgres-db:
+    depends_on: []
+  redis-cache:
+    depends_on: []
+  mongodb:
+    depends_on: []
+  rabbitmq:
+    depends_on: []
+
+  # Auth Layer
+  auth-service:
+    depends_on:
+      - postgres-db
+      - redis-cache
+  user-service:
+    depends_on:
+      - postgres-db
+      - auth-service
+
+  # Core Services
+  product-service:
+    depends_on:
+      - mongodb
+      - auth-service
+  inventory-service:
+    depends_on:
+      - postgres-db
+      - product-service
+  pricing-service:
+    depends_on:
+      - redis-cache
+      - product-service
+
+  # Order Layer
+  cart-service:
+    depends_on:
+      - redis-cache
+      - product-service
+      - pricing-service
+  order-service:
+    depends_on:
+      - postgres-db
+      - cart-service
+      - inventory-service
+      - auth-service
+
+  # Payment Layer
+  payment-service:
+    depends_on:
+      - postgres-db
+      - order-service
+      - auth-service
+  invoice-service:
+    depends_on:
+      - postgres-db
+      - payment-service
+
+  # Notification Layer
+  email-service:
+    depends_on:
+      - rabbitmq
+  sms-service:
+    depends_on:
+      - rabbitmq
+  notification-service:
+    depends_on:
+      - email-service
+      - sms-service
+      - order-service
+      - payment-service
+
+  # API Layer
+  api-gateway:
+    depends_on:
+      - auth-service
+      - user-service
+      - product-service
+      - order-service
+      - payment-service
+
+  # Frontend Layer
+  admin-dashboard:
+    depends_on:
+      - api-gateway
+  frontend:
+    depends_on:
+      - api-gateway
+
+  # Monitoring
+  monitoring-service:
+    depends_on:
+      - api-gateway

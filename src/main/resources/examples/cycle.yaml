@@ -1,0 +1,9 @@
+services:
+  auth-service:
+    depends_on:
+      - user-service
+  user-service:
+    depends_on:
+      - auth-service
+  database:
+    depends_on: []
