@@ -13,7 +13,6 @@
   Bachelorarbeit – TU Dortmund<br>
   Mohammad El Zein | Matrikelnummer: 259506<br>
   Betreuer: Prof. Dr. Kevin Buchin<br>
-  Zweitgutachterin: Jun.-Prof. Dr. Carolin Rehs
 </p>
 
 ---
