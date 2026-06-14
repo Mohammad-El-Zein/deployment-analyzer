@@ -1,11 +1,5 @@
 # Deployment Analyzer
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java"/>
-  <img src="https://img.shields.io/badge/Maven-3.9-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"/>
-  <img src="https://img.shields.io/badge/Algorithm-Engineering-4CAF50?style=for-the-badge" alt="Algorithm Engineering"/>
-  <img src="https://img.shields.io/badge/TU-Dortmund-003DA5?style=for-the-badge" alt="TU Dortmund"/>
-</p>
 
 <p align="center">
   <strong>Graphbasierte Modellierung und algorithmische Optimierung von Microservice-Deployment-Reihenfolgen</strong>
