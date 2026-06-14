@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <strong>Graphbasierte Modellierung und algorithmische Optimierung von Microservice-Deployment-Reihenfolgen</strong>
+  <strong>Entwicklung und Evaluation eines graphbasierten Algorithmus zur automatischen Bestimmung von Deployment-Reihenfolgen in Microservice-Architekturen</strong>
 </p>
 
 <p align="center">
@@ -20,13 +20,40 @@
 
 ## Beschreibung
 
-Dieses Tool analysiert Microservice-Abhängigkeiten automatisch und berechnet die optimale Deployment-Reihenfolge mithilfe von Graphalgorithmen. Der Benutzer gibt nur die Abhängigkeiten an – alles andere berechnet das System automatisch.
+Dieses Tool analysiert Microservice-Abhängigkeiten automatisch und berechnet die optimale Deployment-Reihenfolge mithilfe von Graphalgorithmen. Der Benutzer definiert nur die Abhängigkeiten zwischen den Services in einer YAML-Datei – die korrekte Reihenfolge, Zyklenerkennung und Parallelisierungsoptimierung übernimmt das System vollautomatisch.
+
+### Motivation
+
+In modernen Software-Systemen bestehen Anwendungen aus vielen unabhängigen Microservices, die voneinander abhängen. Das Deployment dieser Services muss in einer bestimmten Reihenfolge erfolgen – ein Frontend-Service kann nicht starten, bevor der API-Gateway läuft, und der API-Gateway benötigt einen laufenden Auth-Service, der wiederum eine verfügbare Datenbank voraussetzt.
 
 ### Probleme die gelöst werden
 
-- Manuelle Reihenfolgebestimmung skaliert nicht bei vielen Services
-- Zyklische Abhängigkeiten werden von aktuellen Tools nicht zuverlässig erkannt
-- Parallelisierungspotenzial wird verschenkt
+| Problem | Beschreibung | Lösung |
+|---|---|---|
+| Manuelle Reihenfolge | Bei 50+ Services nicht mehr praktikabel | Automatische Berechnung via Kahn / DFS |
+| Zyklische Abhängigkeiten | Werden nicht erkannt – System startet nicht | Tarjan erkennt + Feedback Arc Set löst |
+| Verschenkte Parallelisierung | Services werden unnötig sequenziell deployed | Level-BFS gruppiert parallele Services |
+
+### Ablauf
+
+```
+YAML Datei (Abhängigkeiten)
+        ↓
+Graph aufbauen
+        ↓
+Kahn oder DFS → Reihenfolge berechnen
+        ↓
+Zyklus gefunden?
+    ↙         ↘
+  JA           NEIN
+   ↓               ↓
+Tarjan          Level-BFS
+→ Zyklus        → Parallele
+  lokalisieren    Gruppen
+   ↓
+Feedback Arc Set
+→ Lösungsvorschlag
+```
 
 ---
 
