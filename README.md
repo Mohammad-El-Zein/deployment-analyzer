@@ -362,7 +362,7 @@ deployment-analyzer/
 |---|---|---|---|
 | 5 | 0.109 ms | 0.061 ms | DFS |
 | 20 | 0.150 ms | 0.120 ms | DFS |
-| 50 | 0.178 ms | 0.188 ms | Kahn |
+| 50 | 0.185 ms | 0.180 ms | DFS |
 | 100 | 0.265 ms | 0.196 ms | DFS |
 | 1000 | 1.941 ms | 1.070 ms | DFS |
 
