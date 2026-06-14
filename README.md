@@ -279,11 +279,11 @@ deployment-analyzer/
 ├── src/
 │   ├── main/java/com/deployment/
 │   │   ├── algorithm/
-│   │   │   ├── KahnAlgorithm.java
 │   │   │   ├── DFSTopologicalSort.java
-│   │   │   ├── TarjanAlgorithm.java
 │   │   │   ├── FeedbackArcSet.java
+│   │   │   ├── KahnAlgorithm.java
 │   │   │   └── LevelBFS.java
+│   │   │   ├── TarjanAlgorithm.java
 │   │   ├── model/
 │   │   │   ├── Graph.java
 │   │   │   └── Service.java
@@ -296,11 +296,13 @@ deployment-analyzer/
 │   │   ├── Main.java
 │   │   └── ResultPrinter.java
 │   └── resources/examples/
-│       ├── simple.yaml        (5 Services)
-│       ├── medium.yaml        (20 Services)
-│       ├── large.yaml         (50 Services)
-│       ├── xlarge.yaml        (100 Services)
-│       └── xxlarge.yaml       (1000 Services)
+│       ├── cycle.yaml             (3 Services mit Zyklus)
+│       ├── xlarge-withCycle.yaml  (100 Services)
+│       ├── simple.yaml            (5 Services)
+│       ├── medium.yaml            (20 Services)
+│       ├── large.yaml             (50 Services)
+│       ├── xlarge.yaml            (100 Services)
+│       └── xxlarge.yaml           (1000 Services)
 └── pom.xml
 ```
 
@@ -311,10 +313,13 @@ deployment-analyzer/
 | Datei | Services | Zyklus | Parallelersparnis |
 |---|---|---|---|
 | simple.yaml | 5 | Nein | 20% |
-| medium.yaml | 20 | Nein | 53% |
+| medium.yaml | 20 | Nein | 55% |
 | large.yaml | 50 | Nein | 90% |
-| xlarge.yaml | 100 | Ja (Test) | 95% |
+| xlarge.yaml | 100 | Nein | 95% |
 | xxlarge.yaml | 1000 | Nein | 99% |
+| cycle.yaml | 3 | Ja (Test) | 33% |
+| xlarge-withCycle.yaml | 103 | Ja (Test) | 95% |
+
 
 ---
 
@@ -327,14 +332,6 @@ deployment-analyzer/
 | 50 | 0.178 ms | 0.188 ms | Kahn |
 | 100 | 0.265 ms | 0.196 ms | DFS |
 | 1000 | 1.941 ms | 1.070 ms | DFS |
-
----
-
-## Technologien
-
-```
-Java 21  •  Maven 3.9  •  SnakeYAML 2.0  •  JUnit Jupiter 5.9.2
-```
 
 ---
 
