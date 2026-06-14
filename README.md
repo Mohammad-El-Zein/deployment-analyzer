@@ -1,5 +1,11 @@
 # Deployment Analyzer
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java"/>
+  <img src="https://img.shields.io/badge/Maven-3.9-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"/>
+  <img src="https://img.shields.io/badge/Algorithm-Engineering-4CAF50?style=for-the-badge" alt="Algorithm Engineering"/>
+  <img src="https://img.shields.io/badge/TU-Dortmund-003DA5?style=for-the-badge" alt="TU Dortmund"/>
+</p>
 
 <p align="center">
   <strong>Graphbasierte Modellierung und algorithmische Optimierung von Microservice-Deployment-Reihenfolgen</strong>
@@ -59,6 +65,21 @@ mvn compile
 
 ### 1. Deployment Analyse
 
+Standardmäßig wird `simple.yaml` (5 Services) analysiert.
+
+Um eine andere YAML Datei zu analysieren, ändere den Pfad in `Main.java`:
+
+```java
+String filePath = "src/main/resources/examples/simple.yaml";
+// Andere Optionen:
+// String filePath = "src/main/resources/examples/medium.yaml";  // 20 Services
+// String filePath = "src/main/resources/examples/large.yaml";   // 50 Services
+// String filePath = "src/main/resources/examples/xlarge.yaml";  // 100 Services
+// String filePath = "src/main/resources/examples/xxlarge.yaml"; // 1000 Services
+```
+
+Dann ausführen:
+
 ```bash
 mvn exec:java
 ```
@@ -79,13 +100,21 @@ mvn exec:java
 
 ### 3. YAML Dateien generieren
 
-In `pom.xml` ändern:
+Die Testdateien für 50, 100 und 1000 Services sind bereits im Repository enthalten.
+
+Falls du eine eigene Größe generieren möchtest, füge in `GraphGenerator.java` am Ende der `main()` Methode folgende Zeile hinzu:
+
+```java
+generate(deine_gewuenschte_anzahl, "gewuenschter_name.yaml");
+```
+
+Dann in `pom.xml` ändern:
 
 ```xml
 <mainClass>com.deployment.GraphGenerator</mainClass>
 ```
 
-Dann:
+Und ausführen:
 
 ```bash
 mvn exec:java
@@ -113,19 +142,26 @@ services:
 
 ---
 
-## Beispiel Output – Kein Zyklus
+## Beispiel Output – Kein Zyklus (simple.yaml)
 
 ```
+╔════════════════════════════════════╗
+║       DEPLOYMENT ANALYZER          ║
+╚════════════════════════════════════╝
+
+Lese YAML: src/main/resources/examples/simple.yaml
+
 #=====================================#
 #          GRAPH UEBERSICHT           #
 #=====================================#
  Services: 5
---------------------------------------
- database     -> [auth-service]   (In-Degree: 0)
- auth-service -> [api-gateway]    (In-Degree: 2)
- api-gateway  -> [frontend]       (In-Degree: 1)
- frontend     -> []               (In-Degree: 1)
---------------------------------------
+-----------------------------------------------------
+ auth-service  -> [api-gateway]        (In-Degree: 2)
+ database      -> [auth-service]       (In-Degree: 0)
+ api-gateway   -> [frontend]           (In-Degree: 1)
+ frontend      -> []                   (In-Degree: 1)
+ redis         -> [auth-service]       (In-Degree: 0)
+-----------------------------------------------------
 
 #=====================================#
 #      KAHN'S ALGORITHMUS (BFS)       #
@@ -134,29 +170,83 @@ services:
 --------------------------------------
  Deployment-Reihenfolge:
    1. database
-   2. auth-service
-   3. api-gateway
-   4. frontend
+   2. redis
+   3. auth-service
+   4. api-gateway
+   5. frontend
+--------------------------------------
+ Laufzeit : 308900 ns (0.309 ms)
+ Speicher : 274.09 KB
+--------------------------------------
+
+#=====================================#
+#     DFS TOPOLOGISCHE SORTIERUNG     #
+#=====================================#
+ [OK] Kein Zyklus gefunden!
+--------------------------------------
+ Deployment-Reihenfolge:
+   1. redis
+   2. database
+   3. auth-service
+   4. api-gateway
+   5. frontend
+--------------------------------------
+ Laufzeit : 131900 ns (0.132 ms)
+ Speicher : 167.50 KB
+--------------------------------------
+
+#=====================================#
+#        VERGLEICH: KAHN vs DFS       #
+#=====================================#
+ Graph-Groesse: 5 Services
+
+                 Kahn                 DFS
+---------------------------------------------------------
+ Laufzeit        308900 ns            131900 ns
+ in ms           0.309 ms             0.132 ms
+ Speicher        274.09 KB            167.50 KB
+ Zyklus          Nein                 Nein
+--------------------------------------
+ Schneller        : DFS
+ Weniger Speicher : DFS
 --------------------------------------
 
 #=====================================#
 #      LEVEL-BFS PARALLELISIERUNG     #
 #=====================================#
- Level 0 -> [database, redis]
- Level 1 -> [auth-service]
- Level 2 -> [api-gateway]
- Level 3 -> [frontend]
+ Parallele Deployment-Gruppen:
 
- Sequenziell : 5 Zeiteinheiten
- Parallel    : 4 Zeiteinheiten
- Ersparnis   : 20%
+   Level 0   -> [database, redis]
+   Level 1   -> [auth-service]
+   Level 2   -> [api-gateway]
+   Level 3   -> [frontend]
+
+--------------------------------------
+ Zeitvergleich:
+   Sequenziell : 5 Zeiteinheiten
+   Parallel    : 4 Zeiteinheiten
+   Ersparnis   : 1 Zeiteinheiten (20%)
+--------------------------------------
+ Algorithmus-Laufzeit: 59300 ns (0.059 ms)
+--------------------------------------
+
+╔════════════════════════════════════╗
+║      Analyse abgeschlossen         ║
+╚════════════════════════════════════╝
 ```
 
 ---
 
-## Beispiel Output – Zyklus gefunden
+## Beispiel Output – Zyklus gefunden (cycle.yaml)
 
 ```
+#=====================================#
+#      KAHN'S ALGORITHMUS (BFS)       #
+#=====================================#
+ [FEHLER] Zyklus gefunden!
+ Deployment nicht moeglich.
+--------------------------------------
+
 #=====================================#
 #        TARJAN'S ALGORITHMUS         #
 #=====================================#
@@ -171,6 +261,13 @@ services:
  Entferne folgende Abhaengigkeiten:
    [X] user-service -> auth-service
  [OK] Nach Entfernung: Kein Zyklus mehr!
+--------------------------------------
+
+#=====================================#
+#      LEVEL-BFS PARALLELISIERUNG     #
+#=====================================#
+ Level 0 -> [database, auth-service]
+ Level 1 -> [user-service]
 --------------------------------------
 ```
 
