@@ -26,18 +26,25 @@ Dieses Tool analysiert Microservice-Abhängigkeiten automatisch und berechnet di
 
 In modernen Software-Systemen bestehen Anwendungen aus vielen unabhängigen Microservices, die voneinander abhängen. Das Deployment dieser Services muss in einer bestimmten Reihenfolge erfolgen – ein Frontend-Service kann nicht starten, bevor der API-Gateway läuft, und der API-Gateway benötigt einen laufenden Auth-Service, der wiederum eine verfügbare Datenbank voraussetzt.
 
+### Was aktuelle Tools leisten – und wo sie scheitern
+
+| Tool | Reihenfolge | Zyklenerkennung | Parallelisierung |
+|---|---|---|---|
+| Docker Compose | Automatisch via `depends_on` | Nur direkte Zyklen | Nein |
+| Kubernetes | Manuell via `initContainers` | Nein | Technisch möglich, aber manuell konfiguriert |
+| Jenkins / CI-CD | Manuell in der Pipeline | Nein | Nein |
+
 ### Probleme die gelöst werden
 
 | Problem | Beschreibung | Lösung |
 |---|---|---|
-| Manuelle Reihenfolge | Bei 50+ Services nicht mehr praktikabel | Automatische Berechnung via Kahn / DFS |
-| Zyklische Abhängigkeiten | Werden nicht erkannt – System startet nicht | Tarjan erkennt + Feedback Arc Set löst |
-| Verschenkte Parallelisierung | Services werden unnötig sequenziell deployed | Level-BFS gruppiert parallele Services |
+| Zyklische Abhängigkeiten | Werden von aktuellen Tools nicht zuverlässig erkannt – System startet nicht und gibt keine klare Fehlermeldung | Tarjan erkennt den Zyklus + Feedback Arc Set gibt konkreten Lösungsvorschlag |
+| Verschenkte Parallelisierung | Kubernetes kann parallel deployen, aber optimiert das nicht automatisch basierend auf dem Abhängigkeitsgraphen | Level-BFS gruppiert automatisch welche Services gleichzeitig starten können |
 
 ### Ablauf
 
 ```
-YAML Datei (Abhängigkeiten)
+YAML Datei (nur Abhängigkeiten angeben)
         ↓
 Graph aufbauen
         ↓
