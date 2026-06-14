@@ -1,10 +1,8 @@
 # Deployment Analyzer
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java"/>
-  <img src="https://img.shields.io/badge/Maven-3.9-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"/>
-  <img src="https://img.shields.io/badge/Algorithm-Engineering-4CAF50?style=for-the-badge" alt="Algorithm Engineering"/>
-  <img src="https://img.shields.io/badge/TU-Dortmund-003DA5?style=for-the-badge" alt="TU Dortmund"/>
+  <img src="https://img.shields.io/badge/TU-Dortmund-4CAF50?style=for-the-badge" alt="Algorithm Engineering"/>
+  <img src="https://img.shields.io/badge/Algorithm-Engineering-003DA5?style=for-the-badge" alt="TU Dortmund"/>
 </p>
 
 <p align="center">
@@ -76,6 +74,9 @@ String filePath = "src/main/resources/examples/simple.yaml";
 // String filePath = "src/main/resources/examples/large.yaml";   // 50 Services
 // String filePath = "src/main/resources/examples/xlarge.yaml";  // 100 Services
 // String filePath = "src/main/resources/examples/xxlarge.yaml"; // 1000 Services
+// String filePath = "src/main/resources/examples/cycle.yaml"; // 3 Services mit Zyklus
+// String filePath = "src/main/resources/examples/xlarge-withCycle.yaml"; // 103 Services
+
 ```
 
 Dann ausführen:
@@ -99,8 +100,6 @@ mvn exec:java
 ```
 
 ### 3. YAML Dateien generieren
-
-Die Testdateien für 50, 100 und 1000 Services sind bereits im Repository enthalten.
 
 Falls du eine eigene Größe generieren möchtest, füge in `GraphGenerator.java` am Ende der `main()` Methode folgende Zeile hinzu:
 
