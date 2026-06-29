@@ -374,14 +374,6 @@ deployment-analyzer/
 
 ---
 
-## Technologien
-
-```
-Java 21  •  Maven 3.9  •  SnakeYAML 2.0  •  JUnit Jupiter 5.9.2
-```
-
----
-
 ## Autor
 
 <table>
@@ -403,6 +395,5 @@ Java 21  •  Maven 3.9  •  SnakeYAML 2.0  •  JUnit Jupiter 5.9.2
 Dieses Projekt wurde im Rahmen einer Bachelorarbeit an der TU Dortmund erstellt.
 
 **TU Dortmund – Lehrstuhl Algorithm Engineering**  
-Prof. Dr. Kevin Buchin
 
 
