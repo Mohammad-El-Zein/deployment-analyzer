@@ -2,73 +2,53 @@ package com.deployment.algorithm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.deployment.model.Graph;
 
-/**
- * Feedback Arc Set Algorithmus
- * Findet minimale Kanten die entfernt werden müssen um alle Zyklen aufzulösen
- * Nutzt Greedy Heuristik (NP-schweres Problem)
- */
 public class FeedbackArcSet {
 
-    // Kanten die entfernt werden sollen
-    // Format: "ServiceA -> ServiceB"
     private List<String> edgesToRemove;
-
-    // Laufzeit messen
     private long executionTime;
- 
+
     public FeedbackArcSet() {
         edgesToRemove = new ArrayList<>();
         executionTime = 0;
     }
 
-    /**
-     * Führt Feedback Arc Set Greedy Heuristik aus
-     */
-    public void execute(Graph graph, List<List<String>> cycles) {
+    public void execute(Graph graph,
+                        List<List<String>> cycles) {
 
-        // Laufzeit Start
         long startTime = System.nanoTime();
 
-        // Kopie der Adjazenzliste erstellen
-        // (wir verändern sie – original bleibt unberührt)
-        Map<String, List<String>> adjCopy = 
-            new HashMap<>();
+        Map<String, List<String>> adjCopy = new HashMap<>();
         for (String node : graph.getNodes()) {
-            adjCopy.put(node, 
+            adjCopy.put(node,
                 new ArrayList<>(graph.getNeighbors(node)));
         }
 
-        // Kopie der Zyklen
-        List<List<String>> remainingCycles = 
+        List<List<String>> remainingCycles =
             new ArrayList<>(cycles);
 
-        // Greedy: solange noch Zyklen existieren
         while (!remainingCycles.isEmpty()) {
 
-            // Schritt 1: Zähle für jede Kante
-            // in wie vielen Zyklen sie vorkommt
             Map<String, Integer> edgeCount = new HashMap<>();
 
-            for (List<String> cycle : remainingCycles) {
-                for (int i = 0; i < cycle.size(); i++) {
+            for (List<String> scc : remainingCycles) {
+                Set<String> sccNodes = new HashSet<>(scc);
 
-                    // Kante: cycle[i] → cycle[i+1]
-                    String from = cycle.get(i);
-                    String to = cycle.get(
-                        (i + 1) % cycle.size());
-                    String edge = from + " -> " + to;
-
-                    edgeCount.put(edge,
-                        edgeCount.getOrDefault(edge, 0) + 1);
+                for (String startNode : scc) {
+                    findCyclesInSCC(
+                        startNode, startNode,
+                        sccNodes, adjCopy,
+                        new ArrayList<>(),
+                        edgeCount);
                 }
             }
 
-            // Schritt 2: Finde Kante mit höchstem Vorkommen
             String bestEdge = null;
             int maxCount = 0;
 
@@ -79,50 +59,96 @@ public class FeedbackArcSet {
                 }
             }
 
-            // Schritt 3: Entferne diese Kante
             if (bestEdge != null) {
                 edgesToRemove.add(bestEdge);
 
-                // Aus Adjazenzliste entfernen
                 String[] parts = bestEdge.split(" -> ");
                 String from = parts[0];
                 String to = parts[1];
                 adjCopy.get(from).remove(to);
 
-                // Schritt 4: Entferne Zyklen die 
-                // diese Kante enthalten
                 remainingCycles.removeIf(cycle -> {
-                    for (int i = 0; i < cycle.size(); i++) {
-                        String f = cycle.get(i);
-                        String t = cycle.get(
-                            (i + 1) % cycle.size());
-                        if (f.equals(from) && t.equals(to)) {
-                            return true;
+                    Set<String> cycleNodes =
+                        new HashSet<>(cycle);
+
+                    for (String node : cycle) {
+                        boolean hasEdgeInCycle = false;
+                        for (String neighbor : adjCopy
+                                .getOrDefault(node,
+                                    new ArrayList<>())) {
+                            if (cycleNodes.contains(
+                                    neighbor)) {
+                                hasEdgeInCycle = true;
+                                break;
+                            }
                         }
+                        if (!hasEdgeInCycle) return true;
                     }
                     return false;
                 });
+
+            } else {
+                break;
             }
         }
 
-        // Laufzeit Ende
         executionTime = System.nanoTime() - startTime;
     }
 
-    /**
-     * Gibt den Graph ohne die Zyklus-Kanten zurück
-     */
+    private void findCyclesInSCC(
+            String current,
+            String start,
+            Set<String> sccNodes,
+            Map<String, List<String>> adj,
+            List<String> path,
+            Map<String, Integer> edgeCount) {
+
+        for (String neighbor : adj.getOrDefault(
+                current, new ArrayList<>())) {
+
+            if (!sccNodes.contains(neighbor)) continue;
+
+            String edge = current + " -> " + neighbor;
+
+            if (neighbor.equals(start)
+                    && !path.isEmpty()) {
+                edgeCount.put(edge,
+                    edgeCount.getOrDefault(edge, 0) + 1);
+                for (int i = 0; i < path.size() - 1; i++) {
+                    String e = path.get(i)
+                        + " -> " + path.get(i + 1);
+                    edgeCount.put(e,
+                        edgeCount.getOrDefault(e, 0) + 1);
+                }
+                if (!path.isEmpty()) {
+                    String e = path.get(path.size() - 1)
+                        + " -> " + neighbor;
+                    edgeCount.put(e,
+                        edgeCount.getOrDefault(e, 0) + 1);
+                }
+                return;
+            }
+
+            if (!path.contains(neighbor)) {
+                path.add(neighbor);
+                findCyclesInSCC(
+                    neighbor, start, sccNodes,
+                    adj, path, edgeCount);
+                path.remove(neighbor);
+            }
+        }
+    }
+
     public Map<String, List<String>> getCleanAdjacencyList(
         Graph graph) {
 
         Map<String, List<String>> cleanAdj = new HashMap<>();
 
         for (String node : graph.getNodes()) {
-            cleanAdj.put(node, 
+            cleanAdj.put(node,
                 new ArrayList<>(graph.getNeighbors(node)));
         }
 
-        // Entferne die problematischen Kanten
         for (String edge : edgesToRemove) {
             String[] parts = edge.split(" -> ");
             String from = parts[0];
@@ -133,7 +159,6 @@ public class FeedbackArcSet {
         return cleanAdj;
     }
 
-    // Getter
     public List<String> getEdgesToRemove() {
         return edgesToRemove;
     }
@@ -142,22 +167,20 @@ public class FeedbackArcSet {
         return executionTime;
     }
 
-    // Ergebnis ausgeben
     public void printResult() {
         if (edgesToRemove.isEmpty()) {
-            System.out.println(" Keine Kanten zu entfernen!");
+            System.out.println(
+                " Keine Kanten zu entfernen!");
         } else {
             System.out.println(
-                " Feedback Arc Set Lösung:");
+                " Feedback Arc Set Loesung:");
             System.out.println(
-                "Entferne folgende Abhängigkeiten:");
+                " Entferne folgende Abhaengigkeiten:");
             for (String edge : edgesToRemove) {
-                System.out.println(" - " + edge);
+                System.out.println("   - " + edge);
             }
             System.out.println(
                 " Nach Entfernung: Kein Zyklus mehr!");
-
-                
             System.out.println(
                 " Laufzeit: " + executionTime + " ns");
         }
