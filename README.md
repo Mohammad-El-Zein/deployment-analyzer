@@ -23,22 +23,27 @@ Dieses Tool analysiert Microservice-Abhängigkeiten automatisch und berechnet di
 
 ### Motivation
 
-In modernen Software-Systemen bestehen Anwendungen aus vielen unabhängigen Microservices, die voneinander abhängen. Das Deployment dieser Services muss in einer bestimmten Reihenfolge erfolgen – ein Frontend-Service kann nicht starten, bevor der API-Gateway läuft, und der API-Gateway benötigt einen laufenden Auth-Service, der wiederum eine verfügbare Datenbank voraussetzt.
+In modernen Cloud-Umgebungen bestehen Anwendungen aus vielen unabhängigen Microservices die voneinander abhängen. In der Praxis – z.B. beim Deployment von ~80 Microservices auf Azure Kubernetes Service (AKS) – treten Fehler wie `CrashLoopBackOff` auf, ohne dass klar ist ob ein zyklisches Abhängigkeitsproblem vorliegt. Bei 1000+ Services ist eine manuelle Analyse nicht mehr praktikabel.
 
 ### Was aktuelle Tools leisten – und wo sie scheitern
 
-| Tool | Reihenfolge | Zyklenerkennung | Parallelisierung |
+| Kriterium | Docker Compose | Kubernetes / Azure / AWS | Helm |
 |---|---|---|---|
-| Docker Compose | Automatisch via `depends_on` | Nur direkte Zyklen | Nein |
-| Kubernetes | Manuell via `initContainers` | Nein | Technisch möglich, aber manuell konfiguriert |
-| Jenkins / CI-CD | Manuell in der Pipeline | Nein | Nein |
+| **Reihenfolge** | ✅ Automatisch | ❌ Alles parallel | ⚠️ Teilweise (nach Typ) |
+| **Zyklus erkennen** | ✅ Ja | ❌ Nein | ❌ Nein |
+| **Zyklus lösen** | ❌ Abbruch | ❌ Nein | ❌ Nein |
+| **Parallelisierung** | ✅ Ja | ❌ Unkontrolliert | ❌ Unkontrolliert (App) |
+| **Skalierbarkeit 1000+** | ❌ Riesige YAML | ❌ CrashLoop / Hohe Kosten | ❌ Träge / Timeout |
+| **Bei Zyklus** | ❌ Kaskaden-Abbruch | ❌ Unendliche Schleife | ❌ Timeout (5-10 Min) |
+| **Transparenz** | ❌ Black Box | ❌ Black Box | ❌ Black Box |
 
-### Probleme die gelöst werden
+### Kein bestehendes Tool bietet alles zusammen
 
-| Problem | Beschreibung | Lösung |
-|---|---|---|
-| Zyklische Abhängigkeiten | Werden von aktuellen Tools nicht zuverlässig erkannt – System startet nicht und gibt keine klare Fehlermeldung | Tarjan erkennt den Zyklus + Feedback Arc Set gibt konkreten Lösungsvorschlag |
-| Verschenkte Parallelisierung | Kubernetes kann parallel deployen, aber optimiert das nicht automatisch basierend auf dem Abhängigkeitsgraphen | Level-BFS gruppiert automatisch welche Services gleichzeitig starten können |
+- Automatische Reihenfolge **+** Zyklus erkennen **+** Zyklus lösen
+- Optimierte kontrollierte Parallelisierung (Start-Schichten)
+- Transparenz (White Box) – welcher Algorithmus läuft?
+- Nachgewiesene Skalierbarkeit bei über 1000+ Services
+- Experimenteller Vergleich der Algorithmen
 
 ### Ablauf
 
@@ -58,19 +63,20 @@ Tarjan          Level-BFS
   lokalisieren    Gruppen
    ↓
 Feedback Arc Set
-→ Lösungsvorschlag
+→ Lösungsvorschlag 
+→ Level-BFS erneut
 ```
 
 ---
 
 ## Algorithmen
 
-| Algorithmus | Zweck | Laufzeit |
+| Algorithmus | Zweck | Komplexität |
 |---|---|---|
 | Kahn's Algorithmus | Topologische Sortierung (BFS) | O(V+E) |
 | DFS Topologische Sortierung | Topologische Sortierung (DFS) | O(V+E) |
 | Tarjan's Algorithmus | Zyklenerkennung (SCC) | O(V+E) |
-| Feedback Arc Set | Zyklusauflösung (Greedy) | O(V+E) |
+| Feedback Arc Set | Zyklusauflösung (Greedy) | O(V·E) |
 | Level-BFS | Parallelisierungsoptimierung | O(V+E) |
 
 ---
@@ -103,13 +109,12 @@ Um eine andere YAML Datei zu analysieren, ändere den Pfad in `Main.java`:
 ```java
 String filePath = "src/main/resources/examples/simple.yaml";
 // Andere Optionen:
-// String filePath = "src/main/resources/examples/medium.yaml";  // 20 Services
-// String filePath = "src/main/resources/examples/large.yaml";   // 50 Services
-// String filePath = "src/main/resources/examples/xlarge.yaml";  // 100 Services
-// String filePath = "src/main/resources/examples/xxlarge.yaml"; // 1000 Services
-// String filePath = "src/main/resources/examples/cycle.yaml"; // 3 Services mit Zyklus
-// String filePath = "src/main/resources/examples/xlarge-withCycle.yaml"; // 103 Services
-
+// String filePath = "src/main/resources/examples/medium.yaml";           // 20 Services
+// String filePath = "src/main/resources/examples/large.yaml";            // 50 Services
+// String filePath = "src/main/resources/examples/xlarge.yaml";           // 100 Services
+// String filePath = "src/main/resources/examples/xxlarge.yaml";          // 1000 Services
+// String filePath = "src/main/resources/examples/cycle.yaml";            // 3 Services mit Zyklus
+// String filePath = "src/main/resources/examples/xlarge-withCycle.yaml"; // 104 Services mit Zyklus
 ```
 
 Dann ausführen:
@@ -123,7 +128,7 @@ mvn exec:java
 In `pom.xml` ändern:
 
 ```xml
-<mainClass>com.deployment.EvaluationRunner</mainClass>
+com.deployment.EvaluationRunner
 ```
 
 Dann:
@@ -134,6 +139,8 @@ mvn exec:java
 
 ### 3. YAML Dateien generieren
 
+Die Testdateien für 50, 100 und 1000 Services sind bereits im Repository enthalten.
+
 Falls du eine eigene Größe generieren möchtest, füge in `GraphGenerator.java` am Ende der `main()` Methode folgende Zeile hinzu:
 
 ```java
@@ -143,7 +150,7 @@ generate(deine_gewuenschte_anzahl, "gewuenschter_name.yaml");
 Dann in `pom.xml` ändern:
 
 ```xml
-<mainClass>com.deployment.GraphGenerator</mainClass>
+com.deployment.GraphGenerator
 ```
 
 Und ausführen:
@@ -284,7 +291,7 @@ Lese YAML: src/main/resources/examples/simple.yaml
 #=====================================#
  [FEHLER] Zyklen gefunden: 1
 --------------------------------------
- Zyklus 1: [auth-service, user-service]
+ Zyklus 1: [user-service, auth-service]
 --------------------------------------
 
 #=====================================#
@@ -315,8 +322,8 @@ deployment-analyzer/
 │   │   │   ├── DFSTopologicalSort.java
 │   │   │   ├── FeedbackArcSet.java
 │   │   │   ├── KahnAlgorithm.java
-│   │   │   └── LevelBFS.java
-│   │   │   ├── TarjanAlgorithm.java
+│   │   │   ├── LevelBFS.java
+│   │   │   └── TarjanAlgorithm.java
 │   │   ├── model/
 │   │   │   ├── Graph.java
 │   │   │   └── Service.java
@@ -329,13 +336,13 @@ deployment-analyzer/
 │   │   ├── Main.java
 │   │   └── ResultPrinter.java
 │   └── resources/examples/
-│       ├── cycle.yaml             (3 Services mit Zyklus)
-│       ├── xlarge-withCycle.yaml  (100 Services)
 │       ├── simple.yaml            (5 Services)
 │       ├── medium.yaml            (20 Services)
 │       ├── large.yaml             (50 Services)
 │       ├── xlarge.yaml            (100 Services)
-│       └── xxlarge.yaml           (1000 Services)
+│       ├── xxlarge.yaml           (1000 Services)
+│       ├── cycle.yaml             (3 Services mit Zyklus)
+│       └── xlarge-withCycle.yaml  (104 Services mit Zyklus)
 └── pom.xml
 ```
 
@@ -350,9 +357,8 @@ deployment-analyzer/
 | large.yaml | 50 | Nein | 90% |
 | xlarge.yaml | 100 | Nein | 95% |
 | xxlarge.yaml | 1000 | Nein | 99% |
-| cycle.yaml | 3 | Ja (Test) | 33% |
-| xlarge-withCycle.yaml | 103 | Ja (Test) | 95% |
-
+| cycle.yaml | 3 | Ja | 33% |
+| xlarge-withCycle.yaml | 104 | Ja | 95% |
 
 ---
 
@@ -389,4 +395,5 @@ deployment-analyzer/
 Dieses Projekt wurde im Rahmen einer Bachelorarbeit an der TU Dortmund erstellt.
 
 **TU Dortmund – Lehrstuhl Algorithm Engineering**  
-Prof. Dr. Kevin Buchin
+
+
